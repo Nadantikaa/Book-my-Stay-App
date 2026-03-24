@@ -1,12 +1,12 @@
 /**
- * use case 2: Basic Room types & static availability
+ * use case 3: Centralized room inventory management
  *
- * This abstract class represents generic hotel rooms.
- * it models attributes that are intrinsic to a room type and remain constant
- * regardless of availability.
+ * This class acts as a single spurce of truth for room availability in the hotel.
  * @author  Developer
  * @version 1.0
  */
+import java.util.Map;
+import java.util.HashMap;
 abstract class Room{
     protected int numberOfBeds;
     protected int squareFeet;
@@ -52,6 +52,41 @@ class SuiteRoom extends Room{
     }
 }
 
+class RoomInventory {
+    private Map<String, Integer> roomAvailability;
+
+    // Constructor
+    public RoomInventory() {
+        initializeInventory();
+    }
+
+    // Initialize default values
+    private void initializeInventory() {
+        roomAvailability = new HashMap<>();
+        roomAvailability.put("Single", 10);
+        roomAvailability.put("Double", 5);
+        roomAvailability.put("Suite", 2);
+    }
+
+    // Get availability
+    public Map<String, Integer> getRoomAvailability() {
+        return roomAvailability;
+    }
+
+    // Update availability
+    public void updateAvailability(String roomType, int count) {
+        roomAvailability.put(roomType, count);
+    }
+
+    // Display inventory
+    public void displayInventory() {
+        System.out.println("\nRoom Availability:");
+        for (String type : roomAvailability.keySet()) {
+            System.out.println(type + " Rooms: " + roomAvailability.get(type));
+        }
+    }
+}
+
 public class BookMyStayApp {
     public static void main(String[] args){
         System.out.println("Welcome to the Hotel Management System");
@@ -59,5 +94,12 @@ public class BookMyStayApp {
         SingleRoom obj1=new SingleRoom();
         DoubleRoom obj2=new DoubleRoom();
         SuiteRoom obj3=new SuiteRoom();
+
+        RoomInventory inventory = new RoomInventory();
+        inventory.displayInventory();
+        // Update example
+        inventory.updateAvailability("Single", 8);
+        System.out.println("\nAfter update:");
+        inventory.displayInventory();
     }
 }
