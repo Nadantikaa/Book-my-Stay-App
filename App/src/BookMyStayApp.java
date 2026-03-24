@@ -1,13 +1,16 @@
 /**
- * use case 4: Room Search & availability check
+ * use case 5: Booking Request (First-Come-First-Served)
  *
- * This class demonstartes how guests can view available rooms without modifying
- * inventory data.
+ * This class represents a booking request made by a guest.
+ *
  * @author  Developer
  * @version 1.0
  */
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.Queue;
+
 abstract class Room{
     protected int numberOfBeds;
     protected int squareFeet;
@@ -116,17 +119,61 @@ class RoomSearchService{
     }
 }
 
+class  Reservation{
+    private String guestName;
+    private  String roomType;
+
+    public Reservation(String guestName,String roomType){
+        this.guestName=guestName;
+        this.roomType=roomType;
+    }
+
+    public String getGuestName(){ return guestName;}
+    public String getRoomType(){ return roomType;}
+}
+
+class BookingRequestQueue{
+    private Queue<Reservation> requestQueue;
+    public BookingRequestQueue() {
+        requestQueue = new LinkedList<>();
+    }
+
+    public void addRequest(Reservation reservation){
+        requestQueue.offer(reservation);
+    }
+
+    public Reservation getNextRequest(){ return  requestQueue.poll();}
+
+    public boolean hasPendingRequests(){ return !requestQueue.isEmpty();}
+}
+
 public class BookMyStayApp {
     public static void main(String[] args){
-        System.out.println("Welcome to the Hotel Management System");
-        System.out.println("System initialized successfully.");
+
         SingleRoom obj1=new SingleRoom();
         DoubleRoom obj2=new DoubleRoom();
         SuiteRoom obj3=new SuiteRoom();
+        System.out.println("Booking reuqest Queue");
+        BookingRequestQueue bookingQueue = new BookingRequestQueue();
 
-        RoomInventory inventory=new RoomInventory();
-        RoomSearchService service = new RoomSearchService();
-        service.searchAvailableRooms(inventory,obj1,obj2,obj3);
+        Reservation r1= new Reservation("Abhi","Single");
+        Reservation r2= new Reservation("Subha","Double");
+        Reservation r3 = new Reservation("Vanmathi","Suite");
+
+        bookingQueue.addRequest(r1);
+        bookingQueue.addRequest(r2);
+        bookingQueue.addRequest(r3);
+
+        while (bookingQueue.hasPendingRequests()) {
+
+            Reservation req = bookingQueue.getNextRequest();
+
+            System.out.println("\nProcessing Booking:");
+            System.out.println("Customer: " + req.getGuestName());
+            System.out.println("Room Type: " + req.getRoomType());
+        }
+
+
 
 
 
