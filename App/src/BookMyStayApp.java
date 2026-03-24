@@ -1,7 +1,7 @@
 import java.util.List;
 
 /**
- * use case 8: Booking History & Reporting
+ * use case 9: Error Handling & Validation
  *
  *
  *
@@ -9,6 +9,15 @@ import java.util.List;
  * @version 1.0
  */
 import java.util.*;
+
+
+class InvalidBookingException extends Exception {
+    public InvalidBookingException(String message) {
+        super(message);
+    }
+}
+
+
 class Reservation {
     private String guestName;
     private String roomType;
@@ -23,33 +32,46 @@ class Reservation {
 }
 
 
-class BookingHistory {
+class RoomInventory {
+    private Map<String, Integer> roomAvailability;
 
-    private List<Reservation> confirmedReservations;
-
-    public BookingHistory() {
-        confirmedReservations = new ArrayList<>();
+    public RoomInventory() {
+        roomAvailability = new HashMap<>();
+        roomAvailability.put("Single", 10);
+        roomAvailability.put("Double", 5);
+        roomAvailability.put("Suite", 2);
     }
 
-    public void addReservation(Reservation reservation) {
-        confirmedReservations.add(reservation);
-    }
-
-    public List<Reservation> getConfirmedReservations() {
-        return confirmedReservations;
+    public Map<String, Integer> getRoomAvailability() {
+        return roomAvailability;
     }
 }
 
 
-class BookingReportService {
+class BookingRequestQueue {
+    private Queue<Reservation> requestQueue = new LinkedList<>();
 
-    public void generateReport(BookingHistory history) {
+    public void addRequest(Reservation r) {
+        requestQueue.offer(r);
+    }
+}
 
-        System.out.println("\nBooking History Report");
 
-        for (Reservation r : history.getConfirmedReservations()) {
-            System.out.println("Guest: " + r.getGuestName()
-                    + ", Room Type: " + r.getRoomType());
+class ReservationValidator {
+
+    public void validate(String guestName, String roomType, RoomInventory inventory)
+            throws InvalidBookingException {
+
+        if (guestName == null || guestName.trim().isEmpty()) {
+            throw new InvalidBookingException("Guest name cannot be empty.");
+        }
+
+        if (!inventory.getRoomAvailability().containsKey(roomType)) {
+            throw new InvalidBookingException("Invalid room type selected.");
+        }
+
+        if (inventory.getRoomAvailability().get(roomType) <= 0) {
+            throw new InvalidBookingException("No rooms available for selected type.");
         }
     }
 }
@@ -58,17 +80,34 @@ class BookingReportService {
 public class BookMyStayApp {
     public static void main(String[] args) {
 
-        System.out.println("Booking History and Reporting");
+        System.out.println("Booking Validation");
 
-        BookingHistory history = new BookingHistory();
+        Scanner scanner = new Scanner(System.in);
 
+        RoomInventory inventory = new RoomInventory();
+        ReservationValidator validator = new ReservationValidator();
+        BookingRequestQueue queue = new BookingRequestQueue();
 
-        history.addReservation(new Reservation("Abhi", "Single"));
-        history.addReservation(new Reservation("Subha", "Double"));
-        history.addReservation(new Reservation("Vanmathi", "Suite"));
+        try {
+            System.out.print("Enter guest name: ");
+            String name = scanner.nextLine();
 
-        // generate report
-        BookingReportService reportService = new BookingReportService();
-        reportService.generateReport(history);
+            System.out.print("Enter room type (Single/Double/Suite): ");
+            String type = scanner.nextLine();
+
+            // Validate input
+            validator.validate(name, type, inventory);
+
+            // If valid → add booking
+            Reservation reservation = new Reservation(name, type);
+            queue.addRequest(reservation);
+
+            System.out.println("Booking successful!");
+
+        } catch (InvalidBookingException e) {
+            System.out.println("Booking failed: " + e.getMessage());
+        } finally {
+            scanner.close();
+        }
     }
 }
